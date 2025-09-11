@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Capitalizer</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    #response {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 600%;
+        color: green;
+        word-wrap: break-word;
+        max-width: 90%;
+        white-space: pre-wrap;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: blueviolet;
+    }
+    </style>
+<body>
+    <input type="text" id="inputText" placeholder="Entrez une chaîne">
+    <button id="sendBtn">Envoyer</button>
+    <div id="response"></div>
+
+    <script src="client.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>BetBourse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <style>
+        body {
+            background: #0066ff;
+            padding: 40px;
+        }
+        h1 {
+            color: #222;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #stocks {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(128, 79, 79, 0.07);
+        }
+        th, td {
+            text-align: center;
+            padding: 12px;
+        }
+        th {
+            background: #cec6c6;
+        }
+        tr:nth-child(even) {
+            background: #c3c3c3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cotations Boursières en Temps Réel</h1>
+    <div id="stocks"></div>
+    <img id="stock-plot" src="/plot" style="display:block;margin:30px auto;max-width:100%;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <script>
+        const stocksDiv = document.getElementById('stocks');
+        const plotImg = document.getElementById('stock-plot');
+        const evtSource = new EventSource('/stream');
+        evtSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            let html = '<table border="1"><tr><th>Symbole</th><th>Prix</th><th>Variation</th></tr>';
+            for (const symbol in data) {
+                const change = data[symbol].change;
+                const rowColor = change >= 0 ? 'background: #d4f8e8;' : 'background: #ffd6d6;';
+                html += `<tr style='${rowColor}'><td>${symbol}</td><td>${data[symbol].price}</td><td>${change}</td></tr>`;
+            }
+            html += '</table>';
+            stocksDiv.innerHTML = html;
+            // Rafraîchir le graphique
+            plotImg.src = '/plot?' + new Date().getTime();
+        };
+    </script>
+</body>
+</html>
