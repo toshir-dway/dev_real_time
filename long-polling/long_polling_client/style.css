@@ -1,0 +1,23 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+  background: #f9f9f9;
+}
+#status-container {
+  margin-bottom: 20px;
+  font-size: 1.5em;
+  color: #333;
+}
+#new-status {
+  padding: 5px;
+  font-size: 1em;
+}
+#update-btn {
+  padding: 6px 12px;
+  font-size: 1em;
+  margin-left: 8px;
+}
+#message {
+  margin-top: 15px;
+  color: #007700;
+}

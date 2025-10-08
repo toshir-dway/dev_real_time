@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Multi-Salons</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #363333;
+        }
+        #chat-container {
+            max-width: 800px;
+            margin: 32px auto;
+            background: linear-gradient(135deg, #363333 80%, #3a3535 100%);
+            padding: 32px 24px 24px 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        }
+        h1 {
+            color: #3bec27;
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            font-size: 2.2em;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(60, 236, 39, 0.08);
+        }
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #d7b9b9;
+            background: #ecc9c9;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        #messages li {
+            padding: 10px 14px;
+            border-bottom: 1px solid #3a3535;
+            transition: background 0.2s;
+        }
+        #messages li:last-child {
+            border-bottom: none;
+        }
+        #messages li strong {
+            color: #3bec27;
+            font-weight: 600;
+        }
+        #messages li:hover {
+            background: rgba(60, 236, 39, 0.07);
+        }
+        #form-join, #form-chat {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        #form-join input, #form-chat input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #3bec27;
+            border-radius: 6px;
+            margin-right: 0;
+            background: #181616;
+            color: #fff;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        #form-join input:focus, #form-chat input:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+        #form-join button, #form-chat button {
+            padding: 12px 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.08);
+            transition: background 0.2s;
+        }
+        #form-join button:hover, #form-chat button:hover {
+            background-color: #218838;
+        }
+        #users-list {
+            margin-bottom: 18px;
+            font-size: 1em;
+            color: #3bec27;
+            background: #232020;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #3bec27;
+            box-shadow: 0 1px 4px rgba(60, 236, 39, 0.07);
+        }
+        #users-list strong {
+            color: #fff;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        #users-list span {
+            background: #3bec27;
+            color: #232020;
+            border-radius: 4px;
+            padding: 2px 8px;
+            margin-right: 4px;
+            font-weight: 500;
+            font-size: 0.97em;
+            display: inline-block;
+        }
+        #disconnect-btn {
+            background: #e30e23;
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.08);
+            transition: background 0.2s;
+            display: block;
+            width: 100%;
+        }
+        #disconnect-btn:hover {
+            background-color: #b71c1c;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            #chat-container {
+                padding: 12px 4px;
+            }
+            h1 {
+                font-size: 1.3em;
+            }
+            #users-list, #messages {
+                padding: 8px;
+            }
+            #form-join input, #form-chat input, #form-join button, #form-chat button, #disconnect-btn {
+                font-size: 0.95em;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Chat Multi-Salons</h1>
+
+        <div id="join-section">
+            <form id="form-join">
+                <input id="username-input" autocomplete="off" placeholder="Votre pseudo" required />
+                <input id="room-input" autocomplete="off" placeholder="Nom du salon (ex: général, dev)" required />
+                <button type="submit">Rejoindre le salon</button>
+            </form>
+        </div>
+
+        <div id="chat-section" class="hidden">
+            <p>Vous êtes dans le salon : <strong id="current-room-display"></strong></p>
+            <div id="users-list" style="margin-bottom:10px; font-size:0.95em; color:#333;"></div>
+            <ul id="messages"></ul>
+            <form id="form-chat">
+                <input id="message-input" autocomplete="off" placeholder="Votre message..." />
+                <button type="submit">Envoyer</button>
+            </form>
+            <button id="disconnect-btn" style="background:#dc3545;color:white;padding:10px 15px;border:none;border-radius:4px;cursor:pointer;">Déconnexion</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const joinSection = document.getElementById('join-section');
+        const chatSection = document.getElementById('chat-section');
+        const formJoin = document.getElementById('form-join');
+        const usernameInput = document.getElementById('username-input');
+        const roomInput = document.getElementById('room-input');
+        const currentRoomDisplay = document.getElementById('current-room-display');
+
+        const formChat = document.getElementById('form-chat');
+        const messageInput = document.getElementById('message-input');
+        const messages = document.getElementById('messages');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const usersListDiv = document.getElementById('users-list');
+
+        let currentUsername = '';
+        let currentRoom = '';
+
+        // 1. Gérer la soumission du formulaire de connexion
+        formJoin.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (usernameInput.value && roomInput.value) {
+                currentUsername = usernameInput.value;
+                currentRoom = roomInput.value;
+                currentRoomDisplay.textContent = currentRoom;
+
+                // Emit 'join room' event to server
+                socket.emit('join room', { username: currentUsername, room: currentRoom });
+
+                joinSection.classList.add('hidden');
+                chatSection.classList.remove('hidden');
+            }
+        });
+
+        // 2. Gérer la soumission du formulaire de chat
+        formChat.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (messageInput.value) {
+                // Emit 'chat message' event to server
+                socket.emit('chat message', {
+                    message: messageInput.value,
+                    username: currentUsername,
+                    room: currentRoom
+                });
+                messageInput.value = '';
+            }
+        });
+
+        // 3. Écouter les messages entrants du serveur
+        socket.on('chat message', (data) => {
+            const item = document.createElement('li');
+            item.innerHTML = `<strong>${data.username}</strong> (${data.room}) : ${data.message}`;
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight; // Scroll automatique
+        });
+
+        // 4. Écouter les notifications de connexion/déconnexion dans le salon
+        socket.on('room message', (data) => {
+            const item = document.createElement('li');
+            item.style.fontStyle = 'italic';
+            item.style.color = '#666';
+            item.textContent = data.message;
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+        // 5. Mettre à jour la liste des utilisateurs connectés
+        socket.on('users list', (users) => {
+            usersListDiv.innerHTML = `<strong>Utilisateurs connectés :</strong> ${users.map(u => `<span>${u}</span>`).join(', ')}`;
+        });
+
+        // 6. Charger les anciens messages lors de la reconnexion
+        socket.on('old messages', (messagesArr) => {
+            messages.innerHTML = '';
+            messagesArr.forEach(data => {
+                const item = document.createElement('li');
+                item.innerHTML = `<strong>${data.username}</strong> (${data.room}) : ${data.message}`;
+                messages.appendChild(item);
+            });
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            socket.emit('leave room', { username: currentUsername, room: currentRoom });
+            chatSection.classList.add('hidden');
+            joinSection.classList.remove('hidden');
+            messages.innerHTML = '';
+            usernameInput.value = '';
+            roomInput.value = '';
+            currentUsername = '';
+            currentRoom = '';
+        });
+
+        socket.on('connect', () => {
+            console.log('Connecté au serveur Socket.IO');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Déconnecté du serveur Socket.IO');
+        });
+    </script>
+</body>
+</html>

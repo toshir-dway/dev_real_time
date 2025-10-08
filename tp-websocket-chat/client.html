@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat Client</title>
+    <style>
+        #messages {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 5px;
+            background: #fafafa;
+        }
+        .msg {
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            word-break: break-word;
+            clear: both;
+            display: inline-block;
+        }
+        .mine {
+            background: #2196f3;
+            color: #fff;
+            float: right;
+            text-align: right;
+        }
+        .other {
+            background: #eee;
+            color: #333;
+            float: left;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>WebSocket Chat</h2>
+    <div id="messages"></div>
+    <input type="text" id="inputMessage" placeholder="Tapez votre message..." />
+    <button id="sendBtn">Envoyer</button>
+
+    <script>
+        // Génère un identifiant unique pour ce client
+        const clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+
+        const ws = new WebSocket('ws://localhost:8080');
+
+        ws.onopen = () => {
+            console.log('Connecté au serveur WebSocket');
+        };
+
+        ws.onmessage = (event) => {
+            let data;
+            try {
+                data = JSON.parse(event.data);
+            } catch {
+                data = { message: event.data, clientId: null };
+            }
+            const messagesDiv = document.getElementById('messages');
+            const msgElem = document.createElement('div');
+            msgElem.classList.add('msg');
+            if (data.clientId === clientId) {
+                msgElem.classList.add('mine');
+            } else {
+                msgElem.classList.add('other');
+            }
+            msgElem.textContent = data.message;
+            messagesDiv.appendChild(msgElem);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('inputMessage');
+            if (input.value.trim() !== '') {
+                // Envoie le message avec l'id du client
+                ws.send(JSON.stringify({ message: input.value, clientId }));
+                input.value = '';
+            }
+        }
+
+        document.getElementById('sendBtn').onclick = sendMessage;
+
+        document.getElementById('inputMessage').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
