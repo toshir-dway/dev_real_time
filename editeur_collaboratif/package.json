@@ -1,17 +1,29 @@
 {
   "name": "collabboard",
   "version": "1.0.0",
-  "description": "Tableau blanc collaboratif en temps réel",
+  "description": "Tableau blanc collaboratif en temps réel avec Redis",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "start:instance1": "INSTANCE_ID=instance-1 PORT=3000 REDIS_URL=redis://localhost:6379 node server/index.js",
+    "start:instance2": "INSTANCE_ID=instance-2 PORT=3001 REDIS_URL=redis://localhost:6379 node server/index.js",
+    "start:both": "node start-instances.js",
+    "dev": "nodemon server/index.js",
+    "dev:redis": "REDIS_URL=redis://localhost:6379 nodemon server/index.js",
+    "cluster": "pm2 start ecosystem.config.js",
+    "cluster:stop": "pm2 stop ecosystem.config.js",
+    "test:redis": "docker exec my-redis redis-cli ping",
+    "cluster:monitor": "pm2 monit"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "socket.io": "^4.8.1"
+    "@socket.io/redis-adapter": "^8.2.0",
+    "express": "^4.18.2",
+    "redis": "^4.6.7",
+    "redis-adapter": "^0.2.0",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.0.1",
+    "pm2": "^5.3.0"
   }
 }
