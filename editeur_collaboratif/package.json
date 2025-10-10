@@ -1,0 +1,17 @@
+{
+  "name": "collabboard",
+  "version": "1.0.0",
+  "description": "Tableau blanc collaboratif en temps réel",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
